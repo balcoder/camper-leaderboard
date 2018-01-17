@@ -1,45 +1,91 @@
 import React from "react";
 import { render } from "react-dom";
 
-
-
 import { Header } from "./components/Header";
-import { Home } from "./components/Home";
+
+const css = require('./css/styles.scss');
+
+//parse the JSON string given by the url and pass it to the callback fn
+function getJSON(url, callback) {
+  var xhttp;
+  xhttp=new XMLHttpRequest();
+  xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && this.status == 200) {
+    	var myObj = JSON.parse(this.responseText);
+      callback(myObj);
+    }
+  };
+  xhttp.open("GET", url, true);
+  xhttp.send();
+}
 
 class App extends React.Component {
-  constructor() {
-    super();
-    this.state = {
-      homeLink: "Home"
-    };
-  }
-  onGreet(){
-    alert("Hello");
+  constructor(props) {
+    super(props);
+    this.state = {data: [{}]};
+    // This binding is necessary to make `this` work in the callback
+    this.updateRecent = this.updateRecent.bind(this);
+    this.updateAlltime = this.updateAlltime.bind(this);
+
   }
 
-  onChangeLinkName(newName) {
-    this.setState({
-      homeLink: newName
+  componentWillMount() {
+    var url = "https://fcctop100.herokuapp.com/api/fccusers/top/recent";
+    getJSON(url, (response) => {
+      this.setState({data: response});
     });
   }
-  render() {
-    return (
-      <div>
-        <Header homeLink={this.state.homeLink}/>
-        <div  className="container">
-          <div className="row">
-            <div className="col-xs-10">
-              <Home
-                name={"Des"}
-                initialAge={28}
-                greet={this.onGreet}
-                changeLink={this.onChangeLinkName.bind(this)}
-                initialLinkName={this.state.homeLink}
-              />
-            </div>
-          </div>
+
+  updateRecent(btn_value) {
+    var url = "https://fcctop100.herokuapp.com/api/fccusers/top/recent";
+    getJSON(url, (response) => {
+      this.setState({data: response});
+    });
+  }
+
+  updateAlltime() {
+    var url = "https://fcctop100.herokuapp.com/api/fccusers/top/alltime";
+    getJSON(url, (response) => {
+      this.setState({data: response});
+    });
+  }
+
+  render(){
+
+    var rows = this.state.data.map( (user, i) => {
+      return(
+       <tr>
+        <td>{i + 1}</td>
+        <td><img id="avatar" className="img-thumbnail" src={user.img} alt={user.username + "_pic"}/>{user.username}</td>
+        <td>{user.alltime}</td>
+        <td>{user.recent}</td>
+      </tr>
+      );
+    });
+    return(
+      <div className="container">
+        <div>
+          <Header/>
         </div>
-    </div>
+        <div>
+          <button className="btn btn-success" value="30days" onClick={this.updateRecent}>Last 30 days</button>
+         <button className="btn btn-success"  value="alltime" onClick={this.updateAlltime}>Alltime</button>
+         </div>
+        <div className="table-responsive">
+          <table className="table">
+            <thead>
+              <tr>
+                <td>Rank #</td>
+                <td>User</td>
+                <td>Alltime</td>
+                <td>Last 30 days</td>
+              </tr>
+            </thead>
+            <tbody>{rows}</tbody>
+          </table>
+         </div>
+      </div>
+
     );
   }
 }
