@@ -54,7 +54,7 @@ class App extends React.Component {
 
     var rows = this.state.data.map( (user, i) => {
       return(
-       <tr>
+       <tr key={user.username}>
         <td>{i + 1}</td>
         <td><img id="avatar" className="img-thumbnail" src={user.img} alt={user.username + "_pic"}/>{user.username}</td>
         <td>{user.alltime}</td>
